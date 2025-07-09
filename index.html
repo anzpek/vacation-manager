@@ -309,8 +309,6 @@
 
         // Firebase 초기화 및 버튼 이벤트
         async function initFirebase() {
-            const savedConfig = localStorage.getItem('firebaseConfig');
-            
             // Firebase 설정 버튼
             document.getElementById('firebaseSetupBtn').addEventListener('click', () => {
                 window.location.href = 'firebase-setup.html';
@@ -330,24 +328,26 @@
                 }
             });
 
-            // Firebase 설정이 있으면 자동 연결 시도
-            if (savedConfig) {
-                try {
-                    const config = JSON.parse(savedConfig);
-                    const connected = await firebaseSync.init(config);
+            // 자동으로 기본 Firebase 설정으로 연결 시도
+            try {
+                const connected = await firebaseSync.init(); // 매개변수 없이 호출하면 기본 설정 사용
+                
+                if (connected) {
+                    document.getElementById('firebaseSyncBtn').disabled = false;
+                    document.getElementById('firebaseSyncBtn').textContent = 'Firebase 동기화 ✅';
                     
-                    if (connected) {
-                        document.getElementById('firebaseSyncBtn').disabled = false;
-                        document.getElementById('firebaseSyncBtn').textContent = 'Firebase 동기화 ✅';
-                        
-                        // 초기 데이터 로드
-                        await firebaseSync.loadFromFirebase();
-                        
-                        console.log('Firebase 실시간 동기화가 활성화되었습니다.');
-                    }
-                } catch (error) {
-                    console.error('Firebase 자동 연결 실패:', error);
+                    // 초기 데이터 로드
+                    await firebaseSync.loadFromFirebase();
+                    
+                    console.log('Firebase 자동 연결 성공! 실시간 동기화가 활성화되었습니다.');
+                    
+                    // 사용자에게 알림 (선택사항)
+                    // alert('실시간 공유가 활성화되었습니다!');
+                } else {
+                    console.log('Firebase 자동 연결 실패. 로컬 모드로 실행됩니다.');
                 }
+            } catch (error) {
+                console.error('Firebase 자동 연결 실패:', error);
             }
         }
 
