@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>휴가 관리 시스템</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>휴가 관리 시스템</h1>
+            <div class="header-controls">
+                <button id="employeeManageBtn" class="btn btn-warning">부서 관리</button>
+                <button id="batchInputBtn" class="btn btn-primary">일괄 입력</button>
+                <button id="batchRegisterBtn" class="btn btn-secondary">범위 등록</button>
+                <button id="firebaseSetupBtn" class="btn btn-info">실시간 공유 설정</button>
+                <button id="firebaseSyncBtn" class="btn btn-success" disabled>Firebase 동기화</button>
+                <button id="exportBtn" class="btn btn-info">내보내기</button>
+                <button id="importBtn" class="btn btn-info">가져오기</button>
+                <button id="printBtn" class="btn btn-secondary">인쇄</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+        </header>
+
+        <main>
+            <div class="main-content-wrapper">
+                <!-- 필터링 UI -->
+                <div class="filter-controls">
+                    <h3>필터</h3>
+                    <div class="filter-section">
+                        <label><input type="checkbox" id="selectAllFilterEmployees"> 전체 선택/해제</label>
+                        <h4>팀별 필터</h4>
+                        <div class="checkbox-group" id="teamFilterCheckboxes">
+                            <!-- 팀별 체크박스가 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                    <button id="resetFilterBtn" class="btn btn-secondary">필터 초기화</button>
+                </div>
+
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prevMonth" class="nav-btn">&lt;</button>
+                        <h2 id="currentMonth"></h2>
+                        <button id="nextMonth" class="nav-btn">&gt;</button>
+                    </div>
+                    <div id="calendar" class="calendar"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 개별 휴가 등록 모달 -->
+        <div id="vacationModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>휴가 등록</h3>
+                <form id="vacationForm">
+                    <div class="form-group">
+                        <label for="selectedDate">날짜</label>
+                        <input type="text" id="selectedDate" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeName">직원 이름</label>
+                        <select id="employeeName" required>
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vacationType">휴가 유형</label>
+                        <select id="vacationType" required>
+                            <option value="연차">연차휴가</option>
+                            <option value="특별">특별휴가</option>
+                            <option value="오전">오전반차</option>
+                            <option value="오후">오후반차</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">등록</button>
+                        <button type="button" class="btn btn-secondary" id="cancelVacation">취소</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 일괄 입력 모달 -->
+        <div id="batchInputModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close">&times;</span>
+                <h3>휴가 일괄 입력</h3>
+                <div class="batch-input-container">
+                    <div class="input-section">
+                        <h4>입력 형식 예시</h4>
+                        <pre class="example">임국단
+0701
+0702
+0806(오후)
+0929
+1012
+
+김철수
+0715(오전)
+0820
+0821</pre>
+                        <textarea id="batchInputText" placeholder="직원명과 휴가 날짜를 입력하세요..." rows="15"></textarea>
+                        <button id="parseBatchInput" class="btn btn-primary">파싱하기</button>
+                    </div>
+                    <div class="preview-section">
+                        <h4>파싱 결과 미리보기</h4>
+                        <div id="parsePreview"></div>
+                        <div class="form-actions">
+                            <button id="confirmBatchInput" class="btn btn-success" disabled>등록하기</button>
+                            <button id="cancelBatchInput" class="btn btn-secondary">취소</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 범위 일괄 등록 모달 -->
+        <div id="batchRegisterModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>범위 일괄 등록</h3>
+                <form id="batchRegisterForm">
+                    <div class="form-group">
+                        <label>직원 선택</label>
+                        <div id="employeeCheckboxes" class="checkbox-group"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">시작일</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">종료일</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="batchVacationType">휴가 유형</label>
+                        <select id="batchVacationType" required>
+                            <option value="연차">연차휴가</option>
+                            <option value="특별">특별휴가</option>
+                            <option value="오전">오전반차</option>
+                            <option value="오후">오후반차</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="excludeWeekends">
+                            <input type="checkbox" id="excludeWeekends" checked>
+                            주말 및 공휴일 제외
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">등록</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBatchRegister">취소</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 휴가 수정/삭제 모달 -->
+        <div id="editVacationModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>휴가 수정/삭제</h3>
+                <div id="editVacationContent"></div>
+            </div>
+        </div>
+
+        <!-- 다중 월 인쇄 모달 -->
+        <div id="multiMonthPrintModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>인쇄 설정</h3>
+                <form id="multiMonthPrintForm">
+                    <div class="form-group">
+                        <label for="printYear">연도 선택</label>
+                        <select id="printYear" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>인쇄할 월 선택 (최대 6개월)</label>
+                        <div id="monthCheckboxesContainer" class="checkbox-group">
+                            <!-- 월 체크박스가 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">인쇄</button>
+                        <button type="button" class="btn btn-secondary" id="cancelMultiMonthPrint">취소</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 직원 관리 모달 -->
+        <div id="employeeManageModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close">&times;</span>
+                <h3>부서 관리</h3>
+                <div class="employee-manage-container">
+                    <!-- 상단: 부서, 팀, 직원 추가를 3개 열로 배치 -->
+                    <div class="add-controls-row">
+                        <div class="add-section">
+                            <h4>부서 추가</h4>
+                            <form id="departmentAddForm">
+                                <div class="form-group">
+                                    <input type="text" id="newDepartmentName" placeholder="새 부서 이름" required>
+                                    <button type="submit" class="btn btn-primary">부서 추가</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="add-section">
+                            <h4>팀 추가</h4>
+                            <form id="teamAddForm">
+                                <div class="form-group">
+                                    <input type="text" id="newTeamName" placeholder="새 팀 이름" required>
+                                    <select id="newTeamDepartment" class="department-select" required>
+                                        <option value="">부서 선택</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary">팀 추가</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="add-section">
+                            <h4>직원 추가</h4>
+                            <form id="employeeAddForm">
+                                <div class="form-group">
+                                    <input type="text" id="newEmployeeName" placeholder="직원 이름" required>
+                                    <select id="newEmployeeDepartment" class="department-select" required>
+                                        <option value="">부서 선택</option>
+                                    </select>
+                                    <select id="newEmployeeTeam" class="team-select">
+                                        <option value="">팀 선택</option>
+                                    </select>
+                                    <select id="newEmployeeRole" class="role-select" required>
+                                        <option value="member">팀원</option>
+                                        <option value="leader">팀장</option>
+                                        <option value="manager">부장</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary">직원 추가</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- 하단: 부서 및 직원 관리 전체 공간 활용 -->
+                    <div class="manage-section">
+                        <h4>부서 및 직원 관리</h4>
+                        <div class="combined-list" id="combinedEmployeeList">
+                            <!-- 부서, 팀, 직원이 함께 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/holidays.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/firebase-sync.js"></script> <!-- Firebase 동기화 추가 -->
+    <script src="js/calendar.js"></script> <!-- vacation.js 보다 먼저 로드 -->
+    <script src="js/vacation.js"></script>
+    <script src="js/textParser.js"></script>
+    <script src="js/print.js"></script>
+
+    <!-- 유틸리티 함수 추가 -->
+    <script>
+        // 날짜 문자열을 Date 객체로 변환
+        function parseDateString(dateStr) {
+            return new Date(dateStr);
+        }
+
+        // Date 객체를 YYYY-MM-DD 형식으로 변환
+        function formatDateToYYYYMMDD(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    </script>
+
+
+    <!-- 모든 스크립트가 로드된 후 애플리케이션 초기화 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM 로드 완료, 애플리케이션 초기화 시작');
+            
+            // 정상 초기화 실행
+            storage.init();
+            
+            if (typeof calendar !== 'undefined') {
+                calendar.init();
+            }
+            
+            vacationManager.init();
+            
+            if (typeof textParser !== 'undefined') {
+                textParser.init();
+            }
+            
+            // printManager가 있으면 초기화
+            if (typeof printManager !== 'undefined') {
+                printManager.init();
+            }
+            
+            // Firebase 초기화
+            initFirebase();
+            
+            console.log('애플리케이션 초기화 완료');
+        });
+
+        // Firebase 초기화 및 버튼 이벤트
+        async function initFirebase() {
+            const savedConfig = localStorage.getItem('firebaseConfig');
+            
+            // Firebase 설정 버튼
+            document.getElementById('firebaseSetupBtn').addEventListener('click', () => {
+                window.location.href = 'firebase-setup.html';
+            });
+
+            // Firebase 동기화 버튼
+            document.getElementById('firebaseSyncBtn').addEventListener('click', async () => {
+                if (firebaseSync.isOnline()) {
+                    const success = await firebaseSync.syncToFirebase();
+                    if (success) {
+                        alert('Firebase에 데이터가 동기화되었습니다!');
+                    } else {
+                        alert('동기화 실패. 연결 상태를 확인해주세요.');
+                    }
+                } else {
+                    alert('Firebase가 연결되지 않았습니다. 실시간 공유 설정을 확인해주세요.');
+                }
+            });
+
+            // Firebase 설정이 있으면 자동 연결 시도
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    const connected = await firebaseSync.init(config);
+                    
+                    if (connected) {
+                        document.getElementById('firebaseSyncBtn').disabled = false;
+                        document.getElementById('firebaseSyncBtn').textContent = 'Firebase 동기화 ✅';
+                        
+                        // 초기 데이터 로드
+                        await firebaseSync.loadFromFirebase();
+                        
+                        console.log('Firebase 실시간 동기화가 활성화되었습니다.');
+                    }
+                } catch (error) {
+                    console.error('Firebase 자동 연결 실패:', error);
+                }
+            }
+        }
+
+        // storage 함수들을 오버라이드해서 Firebase 동기화 추가
+        const originalAddVacation = storage.addVacation;
+        storage.addVacation = function(date, employee, type) {
+            const result = originalAddVacation.call(this, date, employee, type);
+            if (firebaseSync.isOnline()) {
+                firebaseSync.syncToFirebase();
+            }
+            return result;
+        };
+
+        const originalRemoveVacation = storage.removeVacation;
+        storage.removeVacation = function(date, employee) {
+            const result = originalRemoveVacation.call(this, date, employee);
+            if (firebaseSync.isOnline()) {
+                firebaseSync.syncToFirebase();
+            }
+            return result;
+        };
+
+        const originalSaveEmployees = storage.saveEmployees;
+        storage.saveEmployees = function(employees) {
+            const result = originalSaveEmployees.call(this, employees);
+            if (firebaseSync.isOnline()) {
+                firebaseSync.syncToFirebase();
+            }
+            return result;
+        };
+
+        const originalSaveDepartments = storage.saveDepartments;
+        storage.saveDepartments = function(departments) {
+            const result = originalSaveDepartments.call(this, departments);
+            if (firebaseSync.isOnline()) {
+                firebaseSync.syncToFirebase();
+            }
+            return result;
+        };
+    </script>
+</body>
+</html>
