@@ -16,9 +16,11 @@ class FirebaseSync {
         };
     }
 
-    // Firebase 초기화
-    async init(config) {
-        if (!config.apiKey) {
+    // Firebase 초기화 (자동으로 기본 설정 사용)
+    async init(customConfig = null) {
+        const configToUse = customConfig || this.config;
+        
+        if (!configToUse || !configToUse.apiKey) {
             console.log('Firebase 설정이 없습니다. 로컬 모드로 실행됩니다.');
             return false;
         }
@@ -29,8 +31,7 @@ class FirebaseSync {
                 await this.loadFirebaseSDK();
             }
 
-            this.config = config;
-            firebase.initializeApp(this.config);
+            firebase.initializeApp(configToUse);
             this.database = firebase.database();
             this.isConnected = true;
 
