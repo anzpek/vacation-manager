@@ -88,14 +88,30 @@
         .instructions li {
             margin-bottom: 8px;
         }
+        .auto-filled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        .notice {
+            background-color: #cce7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔥 Firebase 실시간 공유 설정</h1>
         
+        <div class="notice">
+            <strong>✅ 자동 설정 완료!</strong><br>
+            Firebase 설정이 미리 입력되었습니다. "Firebase 연결" 버튼만 클릭하시면 됩니다!
+        </div>
+        
         <div class="instructions">
-            <h3>📋 설정 방법</h3>
+            <h3>📋 설정 방법 (참고용)</h3>
             <ol>
                 <li><a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a>에 접속</li>
                 <li>새 프로젝트 생성 또는 기존 프로젝트 선택</li>
@@ -109,37 +125,37 @@
         <form id="firebaseConfigForm">
             <div class="form-group">
                 <label for="apiKey">API Key</label>
-                <input type="text" id="apiKey" placeholder="AIzaSyC-..." required>
+                <input type="text" id="apiKey" placeholder="AIzaSyC-..." required class="auto-filled">
             </div>
             
             <div class="form-group">
                 <label for="authDomain">Auth Domain</label>
-                <input type="text" id="authDomain" placeholder="your-project.firebaseapp.com" required>
+                <input type="text" id="authDomain" placeholder="your-project.firebaseapp.com" required class="auto-filled">
             </div>
             
             <div class="form-group">
                 <label for="databaseURL">Database URL</label>
-                <input type="text" id="databaseURL" placeholder="https://your-project-default-rtdb.firebaseio.com/" required>
+                <input type="text" id="databaseURL" placeholder="https://your-project-default-rtdb.firebaseio.com/" required class="auto-filled">
             </div>
             
             <div class="form-group">
                 <label for="projectId">Project ID</label>
-                <input type="text" id="projectId" placeholder="your-project" required>
+                <input type="text" id="projectId" placeholder="your-project" required class="auto-filled">
             </div>
             
             <div class="form-group">
                 <label for="storageBucket">Storage Bucket</label>
-                <input type="text" id="storageBucket" placeholder="your-project.appspot.com">
+                <input type="text" id="storageBucket" placeholder="your-project.appspot.com" class="auto-filled">
             </div>
             
             <div class="form-group">
                 <label for="messagingSenderId">Messaging Sender ID</label>
-                <input type="text" id="messagingSenderId" placeholder="123456789">
+                <input type="text" id="messagingSenderId" placeholder="123456789" class="auto-filled">
             </div>
             
             <div class="form-group">
                 <label for="appId">App ID</label>
-                <input type="text" id="appId" placeholder="1:123456789:web:abcdef..." required>
+                <input type="text" id="appId" placeholder="1:123456789:web:abcdef..." required class="auto-filled">
             </div>
 
             <button type="submit" class="btn btn-primary">Firebase 연결</button>
@@ -155,15 +171,31 @@
     </div>
 
     <script>
-        // 저장된 설정 불러오기
+        // 기본 Firebase 설정을 미리 입력
         document.addEventListener('DOMContentLoaded', () => {
+            // 기본 Firebase 설정
+            const defaultConfig = {
+                apiKey: "AIzaSyCaQ6ndqGrR_x6fvTrZxdf5cHTNnRIj2Gg",
+                authDomain: "busvacation-e894a.firebaseapp.com",
+                databaseURL: "https://busvacation-e894a-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "busvacation-e894a",
+                storageBucket: "busvacation-e894a.firebasestorage.app",
+                messagingSenderId: "919121046118",
+                appId: "1:919121046118:web:033047c3f1bba2164e5ba7"
+            };
+            
+            // 저장된 설정이 있으면 우선 사용, 없으면 기본 설정 사용
             const savedConfig = localStorage.getItem('firebaseConfig');
-            if (savedConfig) {
-                const config = JSON.parse(savedConfig);
-                Object.keys(config).forEach(key => {
-                    const input = document.getElementById(key);
-                    if (input) input.value = config[key] || '';
-                });
+            const configToUse = savedConfig ? JSON.parse(savedConfig) : defaultConfig;
+            
+            Object.keys(configToUse).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = configToUse[key] || '';
+            });
+            
+            // 기본 설정이 로드되었다는 메시지 표시
+            if (!savedConfig) {
+                showStatus('기본 Firebase 설정이 자동으로 로드되었습니다. "Firebase 연결" 버튼을 클릭하세요!', 'success');
             }
         });
 
