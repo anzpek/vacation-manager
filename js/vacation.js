@@ -121,8 +121,11 @@ const vacationManager = {
         const selectedDate = document.getElementById('selectedDate').value;
         const vacationType = document.getElementById('vacationType').value;
 
-        // 이미 HTML에서 required 검증을 했으므로 여기서는 바로 진행
-        // storage.addVacation(date, employee, type) 형식으로 호출
+        if (!employeeName || !selectedDate || !vacationType) {
+            alert('필수 항목을 모두 입력해주세요.');
+            return;
+        }
+
         storage.addVacation(selectedDate, employeeName, vacationType);
         this.clearForm();
         document.getElementById('vacationModal').style.display = 'none';

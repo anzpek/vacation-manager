@@ -20,7 +20,7 @@ class FirebaseSync {
     async init(customConfig = null) {
         const configToUse = customConfig || this.config;
         
-        if (!configToUse || !configToUse.apiKey) {
+        if (!configToUse.apiKey) {
             console.log('Firebase 설정이 없습니다. 로컬 모드로 실행됩니다.');
             return false;
         }
@@ -61,38 +61,11 @@ class FirebaseSync {
         });
     }
 
-    // 데이터 유효성 검사
-    isValidEmployeeData(data) {
-        if (!data || typeof data !== 'object') return false;
-        
-        // 직원 데이터가 객체이고, 최소한의 속성들이 있는지 확인
-        const employees = Object.values(data);
-        if (employees.length === 0) return false;
-        
-        // 첫 번째 직원이 필수 속성들을 가지고 있는지 확인
-        const firstEmployee = employees[0];
-        return firstEmployee && 
-               typeof firstEmployee.department === 'string' && 
-               typeof firstEmployee.role === 'string';
-    }
-
-    isValidDepartmentData(data) {
-        if (!Array.isArray(data)) return false;
-        if (data.length === 0) return false;
-        
-        // 첫 번째 부서가 필수 속성들을 가지고 있는지 확인
-        const firstDept = data[0];
-        return firstDept && 
-               typeof firstDept.id === 'string' && 
-               typeof firstDept.name === 'string' &&
-               Array.isArray(firstDept.teams);
-    }
-
-    // 실시간 리스너 설정 (안전한 동기화)
+    // 실시간 리스너 설정
     setupRealtimeListeners() {
         if (!this.isConnected) return;
 
-        // 휴가 데이터 실시간 동기화 (항상 허용)
+        // 휴가 데이터 실시간 동기화
         this.database.ref('vacations').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data && data !== storage.getVacations()) {
@@ -104,13 +77,13 @@ class FirebaseSync {
             }
         });
 
-        // 직원 데이터 실시간 동기화 (유효성 검사 추가)
+        // 직원 데이터 실시간 동기화 (더미 데이터 차단)
         this.database.ref('employees').on('value', (snapshot) => {
             const data = snapshot.val();
             
-            // 데이터 유효성 검사
-            if (!this.isValidEmployeeData(data)) {
-                console.log('잘못된 직원 데이터 수신됨 - 무시함:', data);
+            // 기본 더미 데이터인지 확인 (정욱군, 박민 등이 포함된 데이터)
+            if (data && (data['정욱군'] || data['박민'] || data['정예원'] || data['장순아'])) {
+                console.log('기본 더미 데이터 감지됨 - 무시함');
                 return;
             }
             
@@ -124,18 +97,11 @@ class FirebaseSync {
             }
         });
 
-        // 부서 데이터 실시간 동기화 (유효성 검사 추가)
+        // 부서 데이터 실시간 동기화
         this.database.ref('departments').on('value', (snapshot) => {
             const data = snapshot.val();
-            
-            // 데이터 유효성 검사
-            if (!this.isValidDepartmentData(data)) {
-                console.log('잘못된 부서 데이터 수신됨 - 무시함:', data);
-                return;
-            }
-            
             if (data && JSON.stringify(data) !== JSON.stringify(storage.getDepartments())) {
-                console.log('유효한 부서 데이터 실시간 업데이트 수신');
+                console.log('부서 데이터 실시간 업데이트 수신');
                 storage.departments = data;
                 storage.saveDepartments();
                 if (typeof vacationManager !== 'undefined' && vacationManager.loadFilterCheckboxes) {
@@ -166,7 +132,7 @@ class FirebaseSync {
         }
     }
 
-    // Firebase에서 데이터 다운로드 (초기 로드만, 유효성 검사 포함)
+    // Firebase에서 데이터 다운로드
     async loadFromFirebase() {
         if (!this.isConnected) return false;
 
@@ -178,24 +144,16 @@ class FirebaseSync {
                 if (data.vacations) {
                     storage.saveVacations(data.vacations);
                 }
-                
-                // 직원 데이터는 유효할 때만 로드
-                if (data.employees && this.isValidEmployeeData(data.employees)) {
+                if (data.employees) {
                     storage.employeeData = data.employees;
                     storage.saveEmployeeData();
-                } else {
-                    console.log('Firebase의 직원 데이터가 유효하지 않음 - 로컬 데이터 유지');
                 }
-                
-                // 부서 데이터는 유효할 때만 로드
-                if (data.departments && this.isValidDepartmentData(data.departments)) {
+                if (data.departments) {
                     storage.departments = data.departments;
                     storage.saveDepartments();
-                } else {
-                    console.log('Firebase의 부서 데이터가 유효하지 않음 - 로컬 데이터 유지');
                 }
 
-                console.log('Firebase에서 유효한 데이터만 로드 완료');
+                console.log('Firebase에서 데이터 로드 완료');
                 return true;
             }
         } catch (error) {
