@@ -102,15 +102,6 @@ const vacationManager = {
         if (vacationForm) {
             vacationForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                // 폼 검증을 JavaScript에서만 처리
-                const employeeName = document.getElementById('employeeName').value;
-                const selectedDate = document.getElementById('selectedDate').value;
-                const vacationType = document.getElementById('vacationType').value;
-                
-                if (!employeeName || !selectedDate || !vacationType) {
-                    alert('필수 항목을 모두 입력해주세요.');
-                    return;
-                }
                 this.addVacation();
             });
         }
@@ -124,14 +115,13 @@ const vacationManager = {
             });
         }
     },
+
     addVacation: function() {
         const employeeName = document.getElementById('employeeName').value;
         const selectedDate = document.getElementById('selectedDate').value;
         const vacationType = document.getElementById('vacationType').value;
 
-        // 폼에서 이미 검증했으므로 바로 진행
-        }
-
+        // 이미 HTML에서 required 검증을 했으므로 여기서는 바로 진행
         // storage.addVacation(date, employee, type) 형식으로 호출
         storage.addVacation(selectedDate, employeeName, vacationType);
         this.clearForm();
