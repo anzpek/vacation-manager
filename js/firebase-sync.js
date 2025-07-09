@@ -3,15 +3,16 @@ class FirebaseSync {
     constructor() {
         this.isConnected = false;
         this.database = null;
+        // 기본 Firebase 설정 (미리 입력)
         this.config = {
-            // Firebase 프로젝트 설정 (사용자가 입력해야 함)
-            apiKey: "",
-            authDomain: "",
-            databaseURL: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+            apiKey: "AIzaSyCaQ6ndqGrR_x6fvTrZxdf5cHTNnRIj2Gg",
+            authDomain: "busvacation-e894a.firebaseapp.com",
+            databaseURL: "https://busvacation-e894a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "busvacation-e894a",
+            storageBucket: "busvacation-e894a.firebasestorage.app",
+            messagingSenderId: "919121046118",
+            appId: "1:919121046118:web:033047c3f1bba2164e5ba7",
+            measurementId: "G-LBH4VTYQDS"
         };
     }
 
