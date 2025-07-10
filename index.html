@@ -8,10 +8,32 @@
     <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
+            <div class="modal-header">
+                <h2>🔐 부서 휴가 관리 시스템</h2>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; margin-bottom: 20px;">부서 전용 비밀번호를 입력하세요</p>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="비밀번호 입력" style="width: 100%; padding: 12px; font-size: 16px;">
+                </div>
+                <div id="loginError" style="color: red; display: none; margin-bottom: 10px;"></div>
+                <button onclick="handleLogin()" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">로그인</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>휴가 관리 시스템</h1>
             <div class="header-controls">
+                <!-- 모바일 전용 버튼들 -->
+                <button id="mobileMenuBtn" class="mobile-only">메뉴</button>
+                <button id="mobileFilterBtn" class="mobile-only">필터</button>
+                
+                <!-- 기존 PC 버튼들 -->
                 <button id="employeeManageBtn" class="btn btn-warning">부서 관리</button>
                 <button id="batchInputBtn" class="btn btn-primary">일괄 입력</button>
                 <button id="batchRegisterBtn" class="btn btn-secondary">범위 등록</button>
@@ -27,10 +49,14 @@
         <main>
             <div class="main-content-wrapper">
                 <!-- 필터링 UI -->
-                <div class="filter-controls">
-                    <h3>필터</h3>
+                <div class="filter-controls" id="filterControls">
+                    <div class="filter-header mobile-only">
+                        <h3>필터</h3>
+                        <button id="closeFilterBtn" class="close-btn">×</button>
+                    </div>
+                    <h3 class="desktop-only">필터</h3>
                     <div class="filter-section">
-                        <label><input type="checkbox" id="selectAllFilterEmployees"> 전체 선택/해제</label>
+                        <label><input type="checkbox" id="selectAllFilterEmployees" checked> 전체 선택/해제</label>
                         <h4>팀별 필터</h4>
                         <div class="checkbox-group" id="teamFilterCheckboxes">
                             <!-- 팀별 체크박스가 여기에 동적으로 추가됩니다 -->
@@ -45,10 +71,55 @@
                         <h2 id="currentMonth"></h2>
                         <button id="nextMonth" class="nav-btn">&gt;</button>
                     </div>
+                    <!-- 모바일 전용 버튼 추가 -->
+                    <div class="mobile-floating-buttons mobile-only">
+                        <button id="mobileMenuBtn2" class="floating-btn">메뉴</button>
+                        <button id="mobileFilterBtn2" class="floating-btn">필터</button>
+                    </div>
                     <div id="calendar" class="calendar"></div>
                 </div>
             </div>
         </main>
+
+        <!-- 모바일 메뉴 오버레이 -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+            <div class="mobile-menu-content">
+                <div class="mobile-menu-header">
+                    <h3>메뉴</h3>
+                    <button id="closeMobileMenuBtn" class="close-btn">×</button>
+                </div>
+                <div class="mobile-menu-items">
+                    <button class="mobile-menu-item" data-action="employeeManage">부서 관리</button>
+                    <button class="mobile-menu-item" data-action="batchInput">일괄 입력</button>
+                    <button class="mobile-menu-item" data-action="batchRegister">범위 등록</button>
+                    <button class="mobile-menu-item" data-action="firebaseSetup">실시간 공유 설정</button>
+                    <button class="mobile-menu-item" data-action="firebaseSync">Firebase 동기화</button>
+                    <button class="mobile-menu-item" data-action="export">내보내기</button>
+                    <button class="mobile-menu-item" data-action="import">가져오기</button>
+                    <button class="mobile-menu-item" data-action="print">인쇄</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 모바일 필터 팝업 -->
+        <div class="filter-popup mobile-only" id="filterPopup">
+            <div class="filter-popup-content">
+                <div class="filter-popup-header">
+                    <h3>필터</h3>
+                    <button class="close-popup-btn" id="closeFilterPopup">×</button>
+                </div>
+                <div class="filter-popup-body">
+                    <div class="filter-section">
+                        <label><input type="checkbox" id="selectAllFilterEmployeesMobile" checked> 전체 선택/해제</label>
+                        <h4>팀별 필터</h4>
+                        <div class="checkbox-group" id="teamFilterCheckboxesMobile">
+                            <!-- 모바일용 팀별 체크박스가 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                    <button id="resetFilterBtnMobile" class="btn btn-secondary" style="width: 100%; margin-top: 15px;">필터 초기화</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 개별 휴가 등록 모달 -->
         <div id="vacationModal" class="modal">
@@ -254,37 +325,75 @@
         </div>
     </div>
 
+    <script src="js/password.js"></script>
     <script src="js/holidays.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/firebase-sync.js"></script> <!-- Firebase 동기화 추가 -->
-    <script src="js/calendar.js"></script> <!-- vacation.js 보다 먼저 로드 -->
+    <script src="js/firebase-sync.js"></script>
+    <script src="js/calendar.js"></script>
     <script src="js/vacation.js"></script>
     <script src="js/textParser.js"></script>
     <script src="js/print.js"></script>
 
-    <!-- 유틸리티 함수 추가 -->
+    <!-- 로그인 관련 스크립트 -->
     <script>
-        // 날짜 문자열을 Date 객체로 변환
-        function parseDateString(dateStr) {
-            return new Date(dateStr);
+        // 로그인 체크
+        function checkLogin() {
+            const isAuthenticated = sessionStorage.getItem('authenticated');
+            const loginTime = sessionStorage.getItem('loginTime');
+            
+            if (!isAuthenticated || !loginTime) {
+                showLoginModal();
+                return false;
+            }
+            
+            // 24시간 세션 만료 체크
+            const now = Date.now();
+            const loginTimestamp = parseInt(loginTime);
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            
+            if (now - loginTimestamp >= twentyFourHours) {
+                sessionStorage.removeItem('authenticated');
+                sessionStorage.removeItem('loginTime');
+                showLoginModal();
+                return false;
+            }
+            
+            return true;
         }
-
-        // Date 객체를 YYYY-MM-DD 형식으로 변환
-        function formatDateToYYYYMMDD(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
-    </script>
-
-
-    <!-- 모든 스크립트가 로드된 후 애플리케이션 초기화 -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        
+        function hideLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        
+        function handleLogin() {
+            const password = document.getElementById('loginPassword').value;
+            const errorMsg = document.getElementById('loginError');
+            
+            if (checkPassword(password)) {
+                sessionStorage.setItem('authenticated', 'true');
+                sessionStorage.setItem('loginTime', Date.now().toString());
+                hideLoginModal();
+                document.getElementById('loginPassword').value = '';
+                errorMsg.style.display = 'none';
+                
+                // 로그인 성공 후 기존 시스템 초기화
+                initializeSystem();
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = '잘못된 비밀번호입니다.';
+            }
+        }
+        
+        function initializeSystem() {
+            // 기존 시스템 초기화 (원본 그대로)
             console.log('DOM 로드 완료, 애플리케이션 초기화 시작');
             
-            // 정상 초기화 실행
             storage.init();
             
             if (typeof calendar !== 'undefined') {
@@ -297,25 +406,210 @@
                 textParser.init();
             }
             
-            // printManager가 있으면 초기화
             if (typeof printManager !== 'undefined') {
                 printManager.init();
             }
             
-            // Firebase 초기화
             initFirebase();
             
             console.log('애플리케이션 초기화 완료');
+        }
+        
+        // 페이지 로드 시 로그인 체크
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkLogin()) {
+                initializeSystem();
+            }
+            
+            // 모바일 UI 초기화
+            initializeMobileUI();
         });
+        
+        // 모바일 UI 초기화
+        function initializeMobileUI() {
+            // 모바일 메뉴 버튼 이벤트
+            document.getElementById('mobileMenuBtn').addEventListener('click', showMobileMenu);
+            document.getElementById('closeMobileMenuBtn').addEventListener('click', hideMobileMenu);
+            
+            // 모바일 필터 버튼 이벤트
+            document.getElementById('mobileFilterBtn').addEventListener('click', showMobileFilter);
+            document.getElementById('closeFilterBtn').addEventListener('click', hideMobileFilter);
+            
+            // 모바일 메뉴 아이템 이벤트
+            document.querySelectorAll('.mobile-menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    hideMobileMenu();
+                    
+                    // 해당 버튼 클릭 이벤트 실행
+                    switch(action) {
+                        case 'employeeManage':
+                            document.getElementById('employeeManageBtn').click();
+                            break;
+                        case 'batchInput':
+                            document.getElementById('batchInputBtn').click();
+                            break;
+                        case 'batchRegister':
+                            document.getElementById('batchRegisterBtn').click();
+                            break;
+                        case 'firebaseSetup':
+                            document.getElementById('firebaseSetupBtn').click();
+                            break;
+                        case 'firebaseSync':
+                            document.getElementById('firebaseSyncBtn').click();
+                            break;
+                        case 'export':
+                            document.getElementById('exportBtn').click();
+                            break;
+                        case 'import':
+                            document.getElementById('importBtn').click();
+                            break;
+                        case 'print':
+                            document.getElementById('printBtn').click();
+                            break;
+                    }
+                });
+            });
+            
+            // 오버레이 클릭 시 닫기
+            document.getElementById('mobileMenuOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideMobileMenu();
+                }
+            });
+            
+            document.getElementById('filterControls').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideMobileFilter();
+                }
+            });
+            
+            // ESC 키로 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    hideMobileMenu();
+                    hideMobileFilter();
+                }
+            });
+        }
+        
+        function showMobileMenu() {
+            document.getElementById('mobileMenuOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function hideMobileMenu() {
+            document.getElementById('mobileMenuOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function showMobileFilter() {
+            document.getElementById('filterControls').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 모바일 필터 버튼 이벤트 추가
+        document.getElementById('mobileFilterBtn2')?.addEventListener('click', showMobileFilter);
+        document.getElementById('closeFilterPopup')?.addEventListener('click', hideMobileFilterPopup);
+        
+        // 모바일 메뉴 버튼 이벤트 추가
+        document.getElementById('mobileMenuBtn2')?.addEventListener('click', showMobileMenu);
+        
+        // 모바일 필터 팝업 관련 함수
+        function showMobileFilterPopup() {
+            const popup = document.getElementById('filterPopup');
+            popup.classList.add('active');
+            
+            // PC의 필터 상태를 모바일로 복사
+            const pcCheckboxes = document.querySelectorAll('#teamFilterCheckboxes input[type="checkbox"]');
+            const mobileContainer = document.getElementById('teamFilterCheckboxesMobile');
+            
+            // 기존 내용 제거
+            mobileContainer.innerHTML = '';
+            
+            // PC 필터 구조 복사
+            const pcFilterSection = document.querySelector('#teamFilterCheckboxes');
+            if (pcFilterSection) {
+                mobileContainer.innerHTML = pcFilterSection.innerHTML;
+                
+                // 모바일 체크박스 이벤트 연결
+                const mobileCheckboxes = mobileContainer.querySelectorAll('input[type="checkbox"]');
+                mobileCheckboxes.forEach((checkbox, index) => {
+                    checkbox.checked = pcCheckboxes[index]?.checked || false;
+                    checkbox.addEventListener('change', () => {
+                        // PC 체크박스와 동기화
+                        if (pcCheckboxes[index]) {
+                            pcCheckboxes[index].checked = checkbox.checked;
+                            pcCheckboxes[index].dispatchEvent(new Event('change'));
+                        }
+                    });
+                });
+            }
+        }
+        
+        function hideMobileFilterPopup() {
+            const popup = document.getElementById('filterPopup');
+            popup.classList.remove('active');
+        }
+        
+        // 모바일 전체 선택 체크박스
+        document.getElementById('selectAllFilterEmployeesMobile')?.addEventListener('change', function() {
+            const pcSelectAll = document.getElementById('selectAllFilterEmployees');
+            if (pcSelectAll) {
+                pcSelectAll.checked = this.checked;
+                pcSelectAll.dispatchEvent(new Event('change'));
+            }
+        });
+        
+        // 모바일 필터 초기화 버튼
+        document.getElementById('resetFilterBtnMobile')?.addEventListener('click', function() {
+            const pcResetBtn = document.getElementById('resetFilterBtn');
+            if (pcResetBtn) {
+                pcResetBtn.click();
+            }
+            // 모바일 체크박스도 모두 체크
+            const mobileCheckboxes = document.querySelectorAll('#teamFilterCheckboxesMobile input[type="checkbox"]');
+            mobileCheckboxes.forEach(checkbox => checkbox.checked = true);
+            document.getElementById('selectAllFilterEmployeesMobile').checked = true;
+        });
+        
+        // 기존 함수 수정
+        function showMobileFilter() {
+            showMobileFilterPopup();
+        }
+        
+        function hideMobileFilter() {
+            document.getElementById('filterControls').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // 엔터 키로 로그인
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('loginModal').style.display === 'block') {
+                handleLogin();
+            }
+        });
+    </script>
+
+    <!-- 유틸리티 함수 추가 -->
+    <script>
+        function parseDateString(dateStr) {
+            return new Date(dateStr);
+        }
+
+        function formatDateToYYYYMMDD(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         // Firebase 초기화 및 버튼 이벤트
         async function initFirebase() {
-            // Firebase 설정 버튼
             document.getElementById('firebaseSetupBtn').addEventListener('click', () => {
                 window.location.href = 'firebase-setup.html';
             });
 
-            // Firebase 동기화 버튼
             document.getElementById('firebaseSyncBtn').addEventListener('click', async () => {
                 if (firebaseSync.isOnline()) {
                     const success = await firebaseSync.syncToFirebase();
@@ -329,21 +623,14 @@
                 }
             });
 
-            // 자동으로 기본 Firebase 설정으로 연결 시도
             try {
-                const connected = await firebaseSync.init(); // 매개변수 없이 호출하면 기본 설정 사용
+                const connected = await firebaseSync.init();
                 
                 if (connected) {
                     document.getElementById('firebaseSyncBtn').disabled = false;
                     document.getElementById('firebaseSyncBtn').textContent = 'Firebase 동기화 ✅';
-                    
-                    // 초기 데이터 로드
                     await firebaseSync.loadFromFirebase();
-                    
                     console.log('Firebase 자동 연결 성공! 실시간 동기화가 활성화되었습니다.');
-                    
-                    // 사용자에게 알림 (선택사항)
-                    // alert('실시간 공유가 활성화되었습니다!');
                 } else {
                     console.log('Firebase 자동 연결 실패. 로컬 모드로 실행됩니다.');
                 }
