@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase 설정</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; text-align: center; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .instructions {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .instructions h3 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .auto-filled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        .notice {
+            background-color: #cce7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            float: right;
+        }
+        .copy-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase 실시간 공유 설정</h1>
+        
+        <div class="notice">
+            <strong>✅ 자동 설정 완료!</strong><br>
+            Firebase 설정이 미리 입력되었습니다. "Firebase 연결" 버튼만 클릭하시면 됩니다!<br>
+            <br>
+            <strong>🏢 다른 부서/회사에서 사용하려면:</strong><br>
+            1. 자신의 Firebase 프로젝트를 생성하고 설정값을 입력<br>
+            2. "설정 파일 생성" 버튼을 클릭하여 config 파일 생성<br>
+            3. 생성된 파일을 GitHub에 함께 업로드
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Firebase 프로젝트 생성 방법</h3>
+            <ol>
+                <li><a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a>에 접속</li>
+                <li>새 프로젝트 생성 또는 기존 프로젝트 선택</li>
+                <li>좌측 메뉴에서 "Realtime Database" 클릭</li>
+                <li>"데이터베이스 만들기" → "테스트 모드로 시작" 선택</li>
+                <li>프로젝트 설정(⚙️) → "일반" 탭에서 웹앱 추가</li>
+                <li>Firebase 구성 정보를 아래 양식에 입력</li>
+            </ol>
+        </div>
+
+        <form id="firebaseConfigForm">
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input type="text" id="apiKey" placeholder="AIzaSyC-..." required class="auto-filled">
+            </div>
+            
+            <div class="form-group">
+                <label for="authDomain">Auth Domain</label>
+                <input type="text" id="authDomain" placeholder="your-project.firebaseapp.com" required class="auto-filled">
+            </div>
+            
+            <div class="form-group">
+                <label for="databaseURL">Database URL</label>
+                <input type="text" id="databaseURL" placeholder="https://your-project-default-rtdb.firebaseio.com/" required class="auto-filled">
+            </div>
+            
+            <div class="form-group">
+                <label for="projectId">Project ID</label>
+                <input type="text" id="projectId" placeholder="your-project" required class="auto-filled">
+            </div>
+            
+            <div class="form-group">
+                <label for="storageBucket">Storage Bucket</label>
+                <input type="text" id="storageBucket" placeholder="your-project.appspot.com" class="auto-filled">
+            </div>
+            
+            <div class="form-group">
+                <label for="messagingSenderId">Messaging Sender ID</label>
+                <input type="text" id="messagingSenderId" placeholder="123456789" class="auto-filled">
+            </div>
+            
+            <div class="form-group">
+                <label for="appId">App ID</label>
+                <input type="text" id="appId" placeholder="1:123456789:web:abcdef..." required class="auto-filled">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Firebase 연결</button>
+            <button type="button" class="btn btn-warning" id="generateConfigFile">설정 파일 생성</button>
+            <button type="button" class="btn btn-success" id="syncData" disabled>데이터 동기화</button>
+            <button type="button" class="btn btn-secondary" id="loadData" disabled>데이터 불러오기</button>
+        </form>
+
+        <div id="status"></div>
+        
+        <div id="configFileOutput" style="display: none;">
+            <h3>📄 생성된 설정 파일 내용</h3>
+            <p>아래 내용을 복사하여 <code>config/firebase-config.js</code> 파일로 저장하세요:</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyConfig()">복사</button>
+                <pre id="configContent"></pre>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <button type="button" class="btn btn-secondary" onclick="goToMain()">메인 페이지로 돌아가기</button>
+        </div>
+    </div>
+
+    <script>
+        // 기본 Firebase 설정을 미리 입력
+        document.addEventListener('DOMContentLoaded', () => {
+            // 기본 Firebase 설정
+            const defaultConfig = {
+                apiKey: "AIzaSyCaQ6ndqGrR_x6fvTrZxdf5cHTNnRIj2Gg",
+                authDomain: "busvacation-e894a.firebaseapp.com",
+                databaseURL: "https://busvacation-e894a-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "busvacation-e894a",
+                storageBucket: "busvacation-e894a.firebasestorage.app",
+                messagingSenderId: "919121046118",
+                appId: "1:919121046118:web:033047c3f1bba2164e5ba7"
+            };
+            
+            // 저장된 설정이 있으면 우선 사용, 없으면 기본 설정 사용
+            const savedConfig = localStorage.getItem('firebaseConfig');
+            const configToUse = savedConfig ? JSON.parse(savedConfig) : defaultConfig;
+            
+            Object.keys(configToUse).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = configToUse[key] || '';
+            });
+            
+            // 기본 설정이 로드되었다는 메시지 표시
+            if (!savedConfig) {
+                showStatus('기본 Firebase 설정이 자동으로 로드되었습니다. "Firebase 연결" 버튼을 클릭하세요!', 'success');
+            }
+        });
+
+        // Firebase 설정 폼 제출
+        document.getElementById('firebaseConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const config = {
+                apiKey: document.getElementById('apiKey').value.trim(),
+                authDomain: document.getElementById('authDomain').value.trim(),
+                databaseURL: document.getElementById('databaseURL').value.trim(),
+                projectId: document.getElementById('projectId').value.trim(),
+                storageBucket: document.getElementById('storageBucket').value.trim(),
+                messagingSenderId: document.getElementById('messagingSenderId').value.trim(),
+                appId: document.getElementById('appId').value.trim()
+            };
+
+            // 설정 저장
+            localStorage.setItem('firebaseConfig', JSON.stringify(config));
+            
+            showStatus('Firebase 설정이 저장되었습니다. 메인 페이지에서 연결을 확인하세요.', 'success');
+            
+            // 버튼 활성화
+            document.getElementById('syncData').disabled = false;
+            document.getElementById('loadData').disabled = false;
+        });
+
+        // 설정 파일 생성
+        document.getElementById('generateConfigFile').addEventListener('click', () => {
+            const config = {
+                apiKey: document.getElementById('apiKey').value.trim(),
+                authDomain: document.getElementById('authDomain').value.trim(),
+                databaseURL: document.getElementById('databaseURL').value.trim(),
+                projectId: document.getElementById('projectId').value.trim(),
+                storageBucket: document.getElementById('storageBucket').value.trim(),
+                messagingSenderId: document.getElementById('messagingSenderId').value.trim(),
+                appId: document.getElementById('appId').value.trim()
+            };
+
+            const configFileContent = `// Firebase 설정 파일
+// 이 파일은 Firebase 설정 페이지에서 자동으로 생성됩니다.
+// 직접 수정하지 마세요.
+
+const FIREBASE_CONFIG = {
+    apiKey: "${config.apiKey}",
+    authDomain: "${config.authDomain}",
+    databaseURL: "${config.databaseURL}",
+    projectId: "${config.projectId}",
+    storageBucket: "${config.storageBucket}",
+    messagingSenderId: "${config.messagingSenderId}",
+    appId: "${config.appId}"
+};
+
+// 설정이 완료되었는지 확인
+const isFirebaseConfigured = () => {
+    return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.length > 0;
+};`;
+
+            document.getElementById('configContent').textContent = configFileContent;
+            document.getElementById('configFileOutput').style.display = 'block';
+            
+            showStatus('설정 파일 내용이 생성되었습니다. 복사하여 config/firebase-config.js 파일로 저장하세요.', 'warning');
+        });
+
+        // 설정 복사
+        function copyConfig() {
+            const configText = document.getElementById('configContent').textContent;
+            navigator.clipboard.writeText(configText).then(() => {
+                showStatus('설정 파일 내용이 클립보드에 복사되었습니다!', 'success');
+            }).catch(err => {
+                showStatus('복사 실패: ' + err, 'error');
+            });
+        }
+
+        // 데이터 동기화
+        document.getElementById('syncData').addEventListener('click', () => {
+            showStatus('메인 페이지에서 "Firebase 동기화" 버튼을 사용하세요.', 'success');
+        });
+
+        // 데이터 불러오기
+        document.getElementById('loadData').addEventListener('click', () => {
+            showStatus('메인 페이지에서 "Firebase에서 불러오기" 버튼을 사용하세요.', 'success');
+        });
+
+        // 상태 메시지 표시
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        // 메인 페이지로 이동
+        function goToMain() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
