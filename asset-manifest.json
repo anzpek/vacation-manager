@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/vacation-manager/static/css/main.01c20584.css",
+    "main.js": "/vacation-manager/static/js/main.da089b15.js",
+    "index.html": "/vacation-manager/index.html",
+    "main.01c20584.css.map": "/vacation-manager/static/css/main.01c20584.css.map",
+    "main.da089b15.js.map": "/vacation-manager/static/js/main.da089b15.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.01c20584.css",
+    "static/js/main.da089b15.js"
+  ]
+}
