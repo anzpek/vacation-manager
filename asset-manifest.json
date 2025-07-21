@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/vacation-manager/static/css/main.87eefb49.css",
-    "main.js": "/vacation-manager/static/js/main.0859a421.js",
+    "main.css": "/vacation-manager/static/css/main.1be8fe81.css",
+    "main.js": "/vacation-manager/static/js/main.c49c8e44.js",
     "index.html": "/vacation-manager/index.html",
-    "main.87eefb49.css.map": "/vacation-manager/static/css/main.87eefb49.css.map",
-    "main.0859a421.js.map": "/vacation-manager/static/js/main.0859a421.js.map"
+    "main.1be8fe81.css.map": "/vacation-manager/static/css/main.1be8fe81.css.map",
+    "main.c49c8e44.js.map": "/vacation-manager/static/js/main.c49c8e44.js.map"
   },
   "entrypoints": [
-    "static/css/main.87eefb49.css",
-    "static/js/main.0859a421.js"
+    "static/css/main.1be8fe81.css",
+    "static/js/main.c49c8e44.js"
   ]
 }
